@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Charity DApp (Hardhat Local)</title>
+</head>
+<body>
+  <h2>Charity DApp</h2>
+
+  <button id="connect">Connect MetaMask</button>
+  <div>Account: <span id="account">-</span></div>
+  <div>ChainId: <span id="chain">-</span></div>
+  <div id="netWarn" style="color:red; font-weight:bold;"></div>
+
+  <hr/>
+
+  <h3>Create campaign</h3>
+  <input id="title" placeholder="title" value="Help Fund" />
+  <input id="goal" placeholder="goal ETH" value="0.1" />
+  <input id="duration" placeholder="duration sec" value="3600" />
+  <input id="beneficiary" placeholder="beneficiary (optional)" />
+  <button id="create">Create</button>
+
+  <hr/>
+
+  <h3>Contribute</h3>
+  <input id="cid" placeholder="campaign id" value="0" />
+  <input id="amount" placeholder="amount ETH" value="0.01" />
+  <button id="donate">Donate</button>
+
+  <hr/>
+
+  <h3>Balances</h3>
+  <button id="refresh">Refresh balances</button>
+  <div>ETH: <span id="ethBal">-</span></div>
+  <div>Token: <span id="tokBal">-</span></div>
+
+  <hr/>
+
+  <h3>Campaigns</h3>
+  <button id="load">Load campaigns</button>
+  <div id="campaignList"></div>
+
+  <hr/>
+
+  <h3>My contribution</h3>
+  <input id="myCid" placeholder="campaign id" value="0" />
+  <button id="myContribBtn">Show my contribution</button>
+  <div>My contribution (ETH): <span id="myContrib">-</span></div>
+
+  <hr/>
+
+  <h3>Finalize / Refund</h3>
+  <input id="finId" placeholder="campaign id" value="0" />
+  <button id="finalize">Finalize</button>
+  <button id="refund">Refund</button>
+
+  <pre id="log" style="background:#f5f5f5; padding:10px;"></pre>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
