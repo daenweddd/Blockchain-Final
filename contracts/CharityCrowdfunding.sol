@@ -9,7 +9,7 @@ import "./RewardToken.sol";
 contract CharityCrowdfunding is ReentrancyGuard {
     struct Campaign {
         string title;
-        uint256 goal;        // wei
+        uint256 goal;       //УДАТЬ НЕ ЗАЬУТ reefewfwefw
         uint256 deadline;    // unix timestamp
         address creator;
         address beneficiary;
