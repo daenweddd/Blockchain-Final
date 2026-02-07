@@ -5,35 +5,41 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./RewardToken.sol";
 
 /// @title CharityCrowdfunding - testnet crowdfunding with ERC-20 rewards
-/// @notice Educational only. Uses test ETH, deploy to Sepolia/Holesky/local.
+/// @notice Educational project. Uses only test ETH on Sepolia (or local).
 contract CharityCrowdfunding is ReentrancyGuard {
-    struct Campaign {
-        string title;
-        uint256 goal;       //УДyghjrekfnoiughkjbloiuyhgjytgrh
 
-        uint256 deadline;    // unix timestamp
-        address creator;
-        address beneficiary;
-        uint256 totalRaised; // wei
-        bool finalized;
-        bool successful;
+    // Campaign data stored on-chain
+    struct Campaign {
+        string title;          // campaign name
+        uint256 goal;          // goal in wei
+        uint256 deadline;      // unix timestamp (seconds)
+        address creator;       // who created the campaign
+        address beneficiary;   // who receives funds if successful
+        uint256 totalRaised;   // total collected in wei
+        bool finalized;        // true after finalizeCampaign()
+        bool successful;       // true if totalRaised >= goal
     }
 
+    // ERC-20 reward token contract
     RewardToken public immutable rewardToken;
 
-    // campaignId => campaign
+    // campaignId => Campaign
     mapping(uint256 => Campaign) public campaigns;
 
-    // campaignId => (user => amountWei)
+    // campaignId => user => contributed wei
     mapping(uint256 => mapping(address => uint256)) public contributions;
 
+    // total number of campaigns created
     uint256 public campaignCount;
 
-    /// @dev Reward rate: how many tokens per 1 wei contributed.
-    /// Example: if RATE = 1000, then 0.01 ETH (1e16 wei) => 1e19 token units (with 18 decimals).
-    /// You can change this number for nicer UI later.
+    // Reward rate: token units per 1 wei contributed
     uint256 public constant REWARD_RATE = 1000;
 
+    // Duration limits to avoid very small/very large deadlines
+    uint256 public constant MIN_DURATION = 60;         // 1 minute
+    uint256 public constant MAX_DURATION = 30 days;    // 30 days
+
+    // Emitted when a new campaign is created
     event CampaignCreated(
         uint256 indexed id,
         address indexed creator,
@@ -43,6 +49,7 @@ contract CharityCrowdfunding is ReentrancyGuard {
         uint256 deadline
     );
 
+    // Emitted when someone contributes
     event Contributed(
         uint256 indexed id,
         address indexed contributor,
@@ -50,11 +57,16 @@ contract CharityCrowdfunding is ReentrancyGuard {
         uint256 rewardMinted
     );
 
+    // Emitted when campaign is finalized
     event Finalized(uint256 indexed id, bool successful, uint256 totalRaised);
+
+    // Emitted when a contributor gets a refund
     event Refunded(uint256 indexed id, address indexed contributor, uint256 amountWei);
 
+    // Custom errors 
     error InvalidGoal();
     error InvalidDuration();
+    error InvalidTitle();
     error InvalidBeneficiary();
     error CampaignNotFound();
     error CampaignEnded();
@@ -65,28 +77,30 @@ contract CharityCrowdfunding is ReentrancyGuard {
     error NothingToRefund();
     error TransferFailed();
 
+    // Save token address 
     constructor(address rewardTokenAddress) {
         rewardToken = RewardToken(rewardTokenAddress);
     }
 
-    /// @notice Create a charity campaign
-    /// @param title Campaign title
-    /// @param goalWei Funding goal in wei
-    /// @param durationSeconds Duration from now
-    /// @param beneficiary Address that receives funds if successful
+    // Create a new campaign
     function createCampaign(
         string calldata title,
         uint256 goalWei,
         uint256 durationSeconds,
         address beneficiary
     ) external returns (uint256 id) {
+
+        // basic input checks
+        if (bytes(title).length == 0) revert InvalidTitle();
         if (goalWei == 0) revert InvalidGoal();
-        if (durationSeconds == 0) revert InvalidDuration();
+        if (durationSeconds < MIN_DURATION || durationSeconds > MAX_DURATION) revert InvalidDuration();
         if (beneficiary == address(0)) revert InvalidBeneficiary();
 
+        // create campaign id
         id = campaignCount++;
-        Campaign storage c = campaigns[id];
 
+        // store campaign data
+        Campaign storage c = campaigns[id];
         c.title = title;
         c.goal = goalWei;
         c.deadline = block.timestamp + durationSeconds;
@@ -96,66 +110,85 @@ contract CharityCrowdfunding is ReentrancyGuard {
         emit CampaignCreated(id, msg.sender, beneficiary, title, goalWei, c.deadline);
     }
 
-    /// @notice Contribute test ETH to an active campaign + mint reward tokens
+    // Contribute ETH and mint reward tokens
     function contribute(uint256 id) external payable nonReentrant {
+
+        // check campaign exists
         if (id >= campaignCount) revert CampaignNotFound();
 
         Campaign storage c = campaigns[id];
+
+        // campaign must be active
         if (block.timestamp >= c.deadline) revert CampaignEnded();
         if (msg.value == 0) revert ZeroContribution();
 
+        // update storage
         contributions[id][msg.sender] += msg.value;
         c.totalRaised += msg.value;
 
+        // mint reward tokens to contributor
         uint256 rewardAmount = msg.value * REWARD_RATE;
         rewardToken.mint(msg.sender, rewardAmount);
 
         emit Contributed(id, msg.sender, msg.value, rewardAmount);
     }
 
-    /// @notice Finalize after deadline; send funds to beneficiary if successful
+    // Finalize after deadline: send funds if success, else allow refunds
     function finalizeCampaign(uint256 id) external nonReentrant {
+
+        // check campaign exists
         if (id >= campaignCount) revert CampaignNotFound();
 
         Campaign storage c = campaigns[id];
+
+        // only once
         if (c.finalized) revert AlreadyFinalized();
+
+        // must be after deadline
         if (block.timestamp < c.deadline) revert TooEarly();
 
         c.finalized = true;
 
+        // success: send ETH to beneficiary
         if (c.totalRaised >= c.goal) {
             c.successful = true;
 
             (bool ok, ) = c.beneficiary.call{value: c.totalRaised}("");
             if (!ok) revert TransferFailed();
         } else {
+            // failed: ETH stays in contract for refunds
             c.successful = false;
-            // funds remain for refunds
         }
 
         emit Finalized(id, c.successful, c.totalRaised);
     }
 
-    /// @notice Refund if campaign failed (after finalize)
+    // Refund contributor if campaign failed and was finalized
     function refund(uint256 id) external nonReentrant {
+
+        // check campaign exists
         if (id >= campaignCount) revert CampaignNotFound();
 
         Campaign storage c = campaigns[id];
+
+        // refund only after finalize and only if failed
         if (!c.finalized) revert TooEarly();
         if (c.successful) revert NotRefundable();
 
         uint256 amount = contributions[id][msg.sender];
         if (amount == 0) revert NothingToRefund();
 
+        // update state first (important for safety)
         contributions[id][msg.sender] = 0;
 
+        // send ETH back to contributor
         (bool ok, ) = msg.sender.call{value: amount}("");
         if (!ok) revert TransferFailed();
 
         emit Refunded(id, msg.sender, amount);
     }
 
-    /// @notice Helper: campaign status for frontend
+    // Quick status helper for UI
     function getStatus(uint256 id)
         external
         view
@@ -163,9 +196,40 @@ contract CharityCrowdfunding is ReentrancyGuard {
     {
         if (id >= campaignCount) revert CampaignNotFound();
         Campaign storage c = campaigns[id];
+
         active = block.timestamp < c.deadline && !c.finalized;
         ended = block.timestamp >= c.deadline;
         finalized = c.finalized;
         successful = c.successful;
+    }
+
+    // One-call getter for frontend
+    function getCampaign(uint256 id)
+        external
+        view
+        returns (
+            string memory title,
+            uint256 goal,
+            uint256 deadline,
+            address creator,
+            address beneficiary,
+            uint256 totalRaised,
+            bool finalized,
+            bool successful
+        )
+    {
+        if (id >= campaignCount) revert CampaignNotFound();
+        Campaign storage c = campaigns[id];
+
+        return (
+            c.title,
+            c.goal,
+            c.deadline,
+            c.creator,
+            c.beneficiary,
+            c.totalRaised,
+            c.finalized,
+            c.successful
+        );
     }
 }

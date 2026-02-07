@@ -1,941 +1,179 @@
-// Addresses (localhost) — ok
-const CROWDFUNDING_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // CharityCrowdfunding
-const TOKEN_ADDRESS = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";        // RewardToken
+// Sepolia network config and contract addresses
+const SEPOLIA = {
+  name: "Sepolia",
+  chainIdDec: 11155111,
+  chainIdHex: "0xaa36a7",
+  rpcUrls: ["https://rpc.sepolia.org"],
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  contracts: {
+    crowdfunding: "0x3006A2ff8572030013D2f304476Fce6f5f460fB2",
+    token: "0x45f4B2520d8B5b9fa4D6ff6aBeDa8df72C6409af",
+  },
+};
 
+// Minimal ABI with only needed functions
 const CROWDFUNDING_ABI = [
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "rewardTokenAddress",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [],
-      "name": "AlreadyFinalized",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "CampaignEnded",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "CampaignNotFound",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidBeneficiary",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidDuration",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidGoal",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotRefundable",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NothingToRefund",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ReentrancyGuardReentrantCall",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "TooEarly",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "TransferFailed",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ZeroContribution",
-      "type": "error"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "beneficiary",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "title",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "goal",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "deadline",
-          "type": "uint256"
-        }
-      ],
-      "name": "CampaignCreated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "contributor",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amountWei",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "rewardMinted",
-          "type": "uint256"
-        }
-      ],
-      "name": "Contributed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "successful",
-          "type": "bool"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "totalRaised",
-          "type": "uint256"
-        }
-      ],
-      "name": "Finalized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "contributor",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amountWei",
-          "type": "uint256"
-        }
-      ],
-      "name": "Refunded",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "REWARD_RATE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "campaignCount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "campaigns",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "title",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "goal",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "deadline",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "beneficiary",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalRaised",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "finalized",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "successful",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "contribute",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "contributions",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "title",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "goalWei",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "durationSeconds",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "beneficiary",
-          "type": "address"
-        }
-      ],
-      "name": "createCampaign",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "finalizeCampaign",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "getStatus",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "active",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "ended",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "finalized",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "successful",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "refund",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "rewardToken",
-      "outputs": [
-        {
-          "internalType": "contract RewardToken",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ];
-const TOKEN_ABI =[
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "name_",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "symbol_",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "allowance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "needed",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC20InsufficientAllowance",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "balance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "needed",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC20InsufficientBalance",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "approver",
-          "type": "address"
-        }
-      ],
-      "name": "ERC20InvalidApprover",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        }
-      ],
-      "name": "ERC20InvalidReceiver",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "ERC20InvalidSender",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        }
-      ],
-      "name": "ERC20InvalidSpender",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotMinter",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnableInvalidOwner",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "OwnableUnauthorizedAccount",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ZeroAddress",
-      "type": "error"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        }
-      ],
-      "name": "Approval",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "from",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        }
-      ],
-      "name": "Transfer",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        }
-      ],
-      "name": "allowance",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "spender",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        }
-      ],
-      "name": "approve",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "balanceOf",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "decimals",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "mint",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "minter",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "name",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_minter",
-          "type": "address"
-        }
-      ],
-      "name": "setMinter",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "symbol",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "totalSupply",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        }
-      ],
-      "name": "transfer",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "from",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        }
-      ],
-      "name": "transferFrom",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }
-  ];
+  "function campaignCount() view returns (uint256)",
+  "function getCampaign(uint256 id) view returns (string,uint256,uint256,address,address,uint256,bool,bool)",
+  "function getStatus(uint256 id) view returns (bool,bool,bool,bool)",
+  "function createCampaign(string,uint256,uint256,address) returns (uint256)",
+  "function contribute(uint256) payable",
+  "function contributions(uint256,address) view returns (uint256)",
+  "function finalizeCampaign(uint256)",
+  "function refund(uint256)",
+];
 
+const TOKEN_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+];
+
+// App state (wallet + contracts)
 let provider, signer, account;
 let crowdfunding, token;
 
-const log = (m) => (document.getElementById("log").textContent += m + "\n");
+// Log element for messages
+const logEl = document.getElementById("log");
+const log = (m) => (logEl.textContent += m + "\n");
 
-function prettyError(e) {
- 
-  return e?.shortMessage || e?.reason || e?.message || String(e);
+// Simple error formatter
+const prettyError = (e) => {
+  return (
+    e?.shortMessage ||
+    e?.reason ||
+    e?.errorName ||
+    e?.data?.message ||
+    e?.message ||
+    String(e)
+  );
+};
+
+// Create Etherscan tx link
+function explorerTx(hash) {
+  return `${SEPOLIA.blockExplorerUrls[0]}/tx/${hash}`;
 }
 
-function requireConnected() {
-  if (!provider || !signer || !account || !crowdfunding || !token) {
-    throw new Error("Not connected. Click Connect MetaMask first.");
+// Show network warning text
+function setWarn(text) {
+  const el = document.getElementById("netWarn");
+  if (el) el.textContent = text || "";
+}
+
+// Enable or disable UI buttons
+function setUiEnabled(enabled) {
+  const ids = [
+    "createBtn",
+    "donateBtn",
+    "refreshBtn",
+    "loadBtn",
+    "myContribBtn",
+    "finalizeBtn",
+    "refundBtn",
+  ];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
   }
 }
 
+// Switch wallet to Sepolia network
+async function switchToSepolia() {
+  if (!window.ethereum) throw new Error("MetaMask not found");
+
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: SEPOLIA.chainIdHex }],
+    });
+  } catch (e) {
+    // Add network if not exists
+    if (e?.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: SEPOLIA.chainIdHex,
+          chainName: SEPOLIA.name,
+          rpcUrls: SEPOLIA.rpcUrls,
+          nativeCurrency: SEPOLIA.nativeCurrency,
+          blockExplorerUrls: SEPOLIA.blockExplorerUrls,
+        }],
+      });
+    } else {
+      throw e;
+    }
+  }
+}
+
+// Check wallet and contracts are ready
+function requireConnected() {
+  if (!provider || !signer || !account || !crowdfunding || !token) {
+    throw new Error("Not connected. Click Connect MetaMask.");
+  }
+}
+
+// Connect wallet and initialize contracts
 async function connect() {
   try {
-    if (!window.ethereum) {
-      alert("MetaMask not found");
+    if (!window.ethereum) return alert("MetaMask not found");
+
+    setUiEnabled(false);
+
+    // Check addresses are set
+    if (!SEPOLIA.contracts.crowdfunding || SEPOLIA.contracts.crowdfunding.startsWith("PASTE_")) {
+      log("Paste Sepolia contract addresses in app.js");
       return;
     }
+
+    await switchToSepolia();
 
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     signer = await provider.getSigner();
     account = await signer.getAddress();
 
-    const network = await provider.getNetwork();
-
     document.getElementById("account").textContent = account;
-    document.getElementById("chain").textContent = network.chainId.toString();
 
-    // network warning
-    const warn = document.getElementById("netWarn");
-    warn.textContent = "";
-    if (network.chainId !== 31337n) {
-      warn.textContent = "Switch to Hardhat Local (chainId 31337). RPC: http://127.0.0.1:8545";
+    const net = await provider.getNetwork();
+    const chainIdNow = Number(net.chainId);
+    document.getElementById("chain").textContent = String(chainIdNow);
+
+    if (chainIdNow !== SEPOLIA.chainIdDec) {
+      setWarn("Wrong network. Switch to Sepolia.");
+      return;
     }
+    setWarn("");
 
-    crowdfunding = new ethers.Contract(CROWDFUNDING_ADDRESS, CROWDFUNDING_ABI, signer);
-    token = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, signer);
+    // Create contract objects
+    crowdfunding = new ethers.Contract(SEPOLIA.contracts.crowdfunding, CROWDFUNDING_ABI, signer);
+    token = new ethers.Contract(SEPOLIA.contracts.token, TOKEN_ABI, signer);
 
-    log(" Connected");
+    log("Connected to Sepolia");
+    setUiEnabled(true);
+
+    await refreshBalances();
   } catch (e) {
-    log( prettyError(e));
+    log(prettyError(e));
   }
 }
 
+// Reconnect on account or network change
+if (window.ethereum) {
+  window.ethereum.on("accountsChanged", () => connect());
+  window.ethereum.on("chainChanged", () => connect());
+}
+
+// Create new campaign
 async function createCampaign() {
   try {
     requireConnected();
 
-    const title = document.getElementById("title").value.trim();
-    const goalEth = document.getElementById("goal").value.trim(); // "0.1"
-    const duration = Number(document.getElementById("duration").value);
+    const title = document.getElementById("titleEl").value.trim();
+    const goalEth = document.getElementById("goalEl").value.trim();
+    const duration = Number(document.getElementById("durationEl").value);
 
-    let beneficiary = document.getElementById("beneficiary").value.trim();
+    let beneficiary = document.getElementById("beneficiaryEl").value.trim();
     if (!beneficiary) beneficiary = account;
 
     const tx = await crowdfunding.createCampaign(
@@ -945,33 +183,40 @@ async function createCampaign() {
       beneficiary
     );
 
-    log("Create tx: " + tx.hash);
+    log("Create tx: " + explorerTx(tx.hash));
     await tx.wait();
-    log( "Campaign created");
+    log("Campaign created");
+
+    await refreshBalances();
+    await loadCampaigns();
   } catch (e) {
     log(prettyError(e));
   }
 }
 
+// Donate ETH to campaign
 async function donate() {
   try {
     requireConnected();
 
-    const id = Number(document.getElementById("cid").value);
-    const amountEth = document.getElementById("amount").value.trim(); // "0.01"
+    const id = Number(document.getElementById("cidEl").value);
+    const amountEth = document.getElementById("amountEl").value.trim();
 
-    const tx = await crowdfunding.contribute(id, {
-      value: ethers.parseEther(amountEth),
-    });
+    const tx = await crowdfunding.contribute(id, { value: ethers.parseEther(amountEth) });
 
-    log("Donate tx: " + tx.hash);
+    log("Donate tx: " + explorerTx(tx.hash));
     await tx.wait();
-    log(" Donated");
+    log("Donation sent");
+
+    await refreshBalances();
+    await loadCampaigns();
+    await showMyContribution();
   } catch (e) {
-    log(prettyError(e)); 
+    log(prettyError(e));
   }
 }
 
+// Update ETH and token balances
 async function refreshBalances() {
   try {
     requireConnected();
@@ -979,13 +224,16 @@ async function refreshBalances() {
     const eth = await provider.getBalance(account);
     document.getElementById("ethBal").textContent = ethers.formatEther(eth);
 
+    const dec = await token.decimals();
+    const sym = await token.symbol();
     const t = await token.balanceOf(account);
-    document.getElementById("tokBal").textContent = ethers.formatUnits(t, 18);
+    document.getElementById("tokBal").textContent = `${ethers.formatUnits(t, dec)} ${sym}`;
   } catch (e) {
     log(prettyError(e));
   }
 }
 
+// Load all campaigns from blockchain
 async function loadCampaigns() {
   try {
     requireConnected();
@@ -997,47 +245,34 @@ async function loadCampaigns() {
     log("Campaign count: " + count);
 
     for (let id = 0; id < count; id++) {
-      const c = await crowdfunding.campaigns(id);
-      const status = await crowdfunding.getStatus(id);
+      const c = await crowdfunding.getCampaign(id);
+      const s = await crowdfunding.getStatus(id);
 
-      const title = c[0];
-      const goalEth = ethers.formatEther(c[1]);
-      const deadline = Number(c[2]);
-      const creator = c[3];
-      const beneficiary = c[4];
-      const totalRaisedEth = ethers.formatEther(c[5]);
+      const box = document.createElement("div");
+      box.style.border = "1px solid #ccc";
+      box.style.padding = "8px";
+      box.style.margin = "6px 0";
+      box.style.borderRadius = "10px";
 
-      const active = status[0];
-      const ended = status[1];
-      const finalized = status[2];
-      const successful = status[3];
-
-      const row = document.createElement("div");
-      row.style.border = "1px solid #ccc";
-      row.style.padding = "8px";
-      row.style.margin = "6px 0";
-
-      row.innerHTML = `
-        <b>#${id}</b> ${title}<br/>
-        goal: ${goalEth} ETH | raised: ${totalRaisedEth} ETH<br/>
-        deadline (unix): ${deadline}<br/>
-        creator: ${creator}<br/>
-        beneficiary: ${beneficiary}<br/>
-        status: active=${active} ended=${ended} finalized=${finalized} successful=${successful}
+      box.innerHTML = `
+        <b>#${id}</b> ${c[0]}<br/>
+        goal: ${ethers.formatEther(c[1])} ETH | raised: ${ethers.formatEther(c[5])} ETH<br/>
+        status: active=${s[0]} finalized=${s[2]} successful=${s[3]}
       `;
 
-      list.appendChild(row);
+      list.appendChild(box);
     }
   } catch (e) {
     log(prettyError(e));
   }
 }
 
+// Show user contribution
 async function showMyContribution() {
   try {
     requireConnected();
 
-    const id = Number(document.getElementById("myCid").value);
+    const id = Number(document.getElementById("myCidEl").value);
     const wei = await crowdfunding.contributions(id, account);
     document.getElementById("myContrib").textContent = ethers.formatEther(wei);
   } catch (e) {
@@ -1045,42 +280,55 @@ async function showMyContribution() {
   }
 }
 
+// Finalize campaign after deadline
 async function finalize() {
   try {
     requireConnected();
 
-    const id = Number(document.getElementById("finId").value);
+    const id = Number(document.getElementById("finIdEl").value);
     const tx = await crowdfunding.finalizeCampaign(id);
 
-    log("Finalize tx: " + tx.hash);
+    log("Finalize tx: " + explorerTx(tx.hash));
     await tx.wait();
-    log("Finalized");
+    log("Campaign finalized");
+
+    await refreshBalances();
+    await loadCampaigns();
   } catch (e) {
-    log(prettyError(e)); // TooEarly / AlreadyFinalized / CampaignNotFound
+    log(prettyError(e));
   }
 }
 
+// Refund if campaign failed
 async function refund() {
   try {
     requireConnected();
 
-    const id = Number(document.getElementById("finId").value);
+    const id = Number(document.getElementById("finIdEl").value);
     const tx = await crowdfunding.refund(id);
 
-    log("Refund tx: " + tx.hash);
+    log("Refund tx: " + explorerTx(tx.hash));
     await tx.wait();
-    log("Refunded");
+    log("Refund complete");
+
+    await refreshBalances();
+    await loadCampaigns();
+    await showMyContribution();
   } catch (e) {
-    log(prettyError(e)); // NothingToRefund / NotRefundable / TooEarly
+    log(prettyError(e));
   }
 }
 
-
-document.getElementById("connect").onclick = connect;
-document.getElementById("create").onclick = createCampaign;
-document.getElementById("donate").onclick = donate;
-document.getElementById("refresh").onclick = refreshBalances;
-document.getElementById("load").onclick = loadCampaigns;
+// Button bindings
+document.getElementById("connectBtn").onclick = connect;
+document.getElementById("createBtn").onclick = createCampaign;
+document.getElementById("donateBtn").onclick = donate;
+document.getElementById("refreshBtn").onclick = refreshBalances;
+document.getElementById("loadBtn").onclick = loadCampaigns;
 document.getElementById("myContribBtn").onclick = showMyContribution;
-document.getElementById("finalize").onclick = finalize;
-document.getElementById("refund").onclick = refund;
+document.getElementById("finalizeBtn").onclick = finalize;
+document.getElementById("refundBtn").onclick = refund;
+
+// Initial UI state
+setUiEnabled(false);
+log("Ready. Click Connect MetaMask.");

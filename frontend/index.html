@@ -2,62 +2,140 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Charity DApp (Hardhat Local)</title>
+  <title>Charity DApp Sepolia</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <h2>Charity DApp</h2>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Charity DApp</h1>
+        <p class="sub">Network: Sepolia • Crowdfunding + ERC-20 reward token</p>
+        <div id="netWarn" class="warn"></div>
+      </div>
 
-  <button id="connect">Connect MetaMask</button>
-  <div>Account: <span id="account">-</span></div>
-  <div>ChainId: <span id="chain">-</span></div>
-  <div id="netWarn" style="color:red; font-weight:bold;"></div>
+      <div class="badge">
+        <span>Account:</span>
+        <strong id="account">-</strong>
+        <span>Chain:</span>
+        <strong id="chain">-</strong>
+      </div>
+    </div>
 
-  <hr/>
+    <div class="card">
+      <div class="smallBtns">
+        <button id="connectBtn" class="primary">Connect MetaMask</button>
+        <button id="refreshBtn">Refresh balances</button>
+        <button id="loadBtn">Load campaigns</button>
+      </div>
 
-  <h3>Create campaign</h3>
-  <input id="title" placeholder="title" value="Help Fund" />
-  <input id="goal" placeholder="goal ETH" value="0.1" />
-  <input id="duration" placeholder="duration sec" value="3600" />
-  <input id="beneficiary" placeholder="beneficiary (optional)" />
-  <button id="create">Create</button>
+      <div class="kv">
+        <div>ETH: <strong id="ethBal">-</strong></div>
+        <div>Token: <strong id="tokBal">-</strong></div>
+      </div>
 
-  <hr/>
+      <pre id="log" class="log"></pre>
+    </div>
 
-  <h3>Contribute</h3>
-  <input id="cid" placeholder="campaign id" value="0" />
-  <input id="amount" placeholder="amount ETH" value="0.01" />
-  <button id="donate">Donate</button>
+    <div class="grid" style="margin-top:14px;">
+      <div class="card">
+        <h2>Create campaign</h2>
 
-  <hr/>
+        <div class="row">
+          <div class="field">
+            <label for="titleEl">Campaign title</label>
+            <input id="titleEl" placeholder="e.g., Help Fund" value="Help Fund">
+          </div>
 
-  <h3>Balances</h3>
-  <button id="refresh">Refresh balances</button>
-  <div>ETH: <span id="ethBal">-</span></div>
-  <div>Token: <span id="tokBal">-</span></div>
+          <div class="field">
+            <label for="beneficiaryEl">Beneficiary (optional)</label>
+            <input id="beneficiaryEl" placeholder="0x... (leave empty = your address)">
+          </div>
 
-  <hr/>
+          <div class="field">
+            <label for="goalEl">Goal (ETH)</label>
+            <input id="goalEl" placeholder="0.05" value="0.05">
+          </div>
 
-  <h3>Campaigns</h3>
-  <button id="load">Load campaigns</button>
-  <div id="campaignList"></div>
+          <div class="field">
+            <label for="durationEl">Duration (seconds)</label>
+            <input id="durationEl" placeholder="60" value="60">
+          </div>
+        </div>
 
-  <hr/>
+        <div class="actions">
+          <button id="createBtn" class="primary">Create</button>
+        </div>
+      </div>
 
-  <h3>My contribution</h3>
-  <input id="myCid" placeholder="campaign id" value="0" />
-  <button id="myContribBtn">Show my contribution</button>
-  <div>My contribution (ETH): <span id="myContrib">-</span></div>
+      <div class="card">
+        <h2>Contribute</h2>
 
-  <hr/>
+        <div class="row">
+          <div class="field">
+            <label for="cidEl">Campaign ID</label>
+            <input id="cidEl" placeholder="0" value="0">
+          </div>
 
-  <h3>Finalize / Refund</h3>
-  <input id="finId" placeholder="campaign id" value="0" />
-  <button id="finalize">Finalize</button>
-  <button id="refund">Refund</button>
+          <div class="field">
+            <label for="amountEl">Amount (ETH)</label>
+            <input id="amountEl" placeholder="0.01" value="0.01">
+          </div>
+        </div>
 
-  <pre id="log" style="background:#f5f5f5; padding:10px;"></pre>
+        <div class="actions">
+          <button id="donateBtn" class="primary">Donate</button>
+        </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+        <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+
+        <h2 style="margin-top:0;">My contribution</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="myCidEl">Campaign ID</label>
+            <input id="myCidEl" placeholder="0" value="0">
+          </div>
+
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="myContribBtn">Show my contribution</button>
+          </div>
+        </div>
+
+        <div class="kv">
+          <div>My contribution (ETH): <strong id="myContrib">-</strong></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <h2>Campaigns</h2>
+        <div id="campaignList"></div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <h2>Finalize / Refund</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="finIdEl">Campaign ID</label>
+            <input id="finIdEl" placeholder="0" value="0">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="finalizeBtn">Finalize</button>
+          <button id="refundBtn" class="danger">Refund</button>
+        </div>
+
+        <p class="sub" style="margin-top:10px;">
+          Tip: Finalize works only after deadline. Refund works only if campaign failed + finalized + you contributed.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

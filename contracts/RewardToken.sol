@@ -12,18 +12,13 @@ contract RewardToken is ERC20, Ownable {
     error NotMinter();
     error ZeroAddress();
 
-    constructor(
-        string memory name_,
-        string memory symbol_
-    ) ERC20(name_, symbol_) Ownable(msg.sender) {}
+    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) Ownable(msg.sender) {}
 
-    /// @notice Set the minter (should be your Crowdfunding contract address)
     function setMinter(address _minter) external onlyOwner {
         if (_minter == address(0)) revert ZeroAddress();
         minter = _minter;
     }
 
-    /// @notice Mint reward tokens to a user (call this from Crowdfunding contract)
     function mint(address to, uint256 amount) external {
         if (msg.sender != minter) revert NotMinter();
         _mint(to, amount);
