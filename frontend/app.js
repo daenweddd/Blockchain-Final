@@ -7,13 +7,13 @@ const SEPOLIA = {
   nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
   blockExplorerUrls: ["https://sepolia.etherscan.io"],
   contracts: {
-    crowdfunding: "0x3006A2ff8572030013D2f304476Fce6f5f460fB2",
-    token: "0x45f4B2520d8B5b9fa4D6ff6aBeDa8df72C6409af",
+    crowdfunding: "0x7e7649DC8F7a62cD86e1B491A7BC65C1B7ac1b35",
+    token: "0x7CB3180038dD80F65082DF540dCf8aacbfE514A7",
   },
 };
 // Addresses (localhost) — ok
-const CROWDFUNDING_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // CharityCrowdfunding
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";        // RewardToken
+const CROWDFUNDING_ADDRESS = "0x7e7649DC8F7a62cD86e1B491A7BC65C1B7ac1b35"; // CharityCrowdfunding
+const TOKEN_ADDRESS = "0x7CB3180038dD80F65082DF540dCf8aacbfE514A7";        // RewardToken
 
 
 // Minimal ABI with only needed functions
