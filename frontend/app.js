@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Sepolia network config and contract addresses
 const SEPOLIA = {
   name: "Sepolia",
@@ -11,6 +12,11 @@ const SEPOLIA = {
     token: "0x45f4B2520d8B5b9fa4D6ff6aBeDa8df72C6409af",
   },
 };
+=======
+// Addresses (localhost) — ok
+const CROWDFUNDING_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // CharityCrowdfunding
+const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";        // RewardToken
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
 
 // Minimal ABI with only needed functions
 const CROWDFUNDING_ABI = [

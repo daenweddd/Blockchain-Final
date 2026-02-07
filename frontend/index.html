@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <title>Charity DApp Sepolia</title>
+<<<<<<< HEAD
+=======
+  <!-- main styles -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -10,10 +14,18 @@
     <div class="header">
       <div>
         <h1>Charity DApp</h1>
+<<<<<<< HEAD
+=======
+        <!-- current network info -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
         <p class="sub">Network: Sepolia • Crowdfunding + ERC-20 reward token</p>
         <div id="netWarn" class="warn"></div>
       </div>
 
+<<<<<<< HEAD
+=======
+      <!-- wallet info -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
       <div class="badge">
         <span>Account:</span>
         <strong id="account">-</strong>
@@ -22,6 +34,10 @@
       </div>
     </div>
 
+<<<<<<< HEAD
+=======
+    <!-- connection + balances -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
     <div class="card">
       <div class="smallBtns">
         <button id="connectBtn" class="primary">Connect MetaMask</button>
@@ -34,10 +50,15 @@
         <div>Token: <strong id="tokBal">-</strong></div>
       </div>
 
+<<<<<<< HEAD
+=======
+      <!-- log output -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
       <pre id="log" class="log"></pre>
     </div>
 
     <div class="grid" style="margin-top:14px;">
+<<<<<<< HEAD
       <div class="card">
         <h2>Create campaign</h2>
 
@@ -89,6 +110,63 @@
 
         <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
 
+=======
+
+      <!-- create campaign -->
+      <div class="card">
+        <h2>Create campaign</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="titleEl">Campaign title</label>
+            <input id="titleEl" placeholder="e.g., Help Fund" value="Help Fund">
+          </div>
+
+          <div class="field">
+            <label for="beneficiaryEl">Beneficiary (optional)</label>
+            <input id="beneficiaryEl" placeholder="0x... (leave empty = your address)">
+          </div>
+
+          <div class="field">
+            <label for="goalEl">Goal (ETH)</label>
+            <input id="goalEl" placeholder="0.05" value="0.05">
+          </div>
+
+          <div class="field">
+            <label for="durationEl">Duration (seconds)</label>
+            <input id="durationEl" placeholder="60" value="60">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="createBtn" class="primary">Create</button>
+        </div>
+      </div>
+
+      <!-- contribute -->
+      <div class="card">
+        <h2>Contribute</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="cidEl">Campaign ID</label>
+            <input id="cidEl" placeholder="0" value="0">
+          </div>
+
+          <div class="field">
+            <label for="amountEl">Amount (ETH)</label>
+            <input id="amountEl" placeholder="0.01" value="0.01">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="donateBtn" class="primary">Donate</button>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+
+        <!-- my contribution -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
         <h2 style="margin-top:0;">My contribution</h2>
 
         <div class="row">
@@ -108,11 +186,19 @@
         </div>
       </div>
 
+<<<<<<< HEAD
+=======
+      <!-- campaigns list -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
       <div class="card" style="grid-column: 1 / -1;">
         <h2>Campaigns</h2>
         <div id="campaignList"></div>
       </div>
 
+<<<<<<< HEAD
+=======
+      <!-- finalize / refund -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
       <div class="card" style="grid-column: 1 / -1;">
         <h2>Finalize / Refund</h2>
 
@@ -128,14 +214,28 @@
           <button id="refundBtn" class="danger">Refund</button>
         </div>
 
+<<<<<<< HEAD
+=======
+        <!-- small tip -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
         <p class="sub" style="margin-top:10px;">
           Tip: Finalize works only after deadline. Refund works only if campaign failed + finalized + you contributed.
         </p>
       </div>
+<<<<<<< HEAD
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+=======
+
+    </div>
+  </div>
+
+  <!-- ethers library -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+  <!-- main app logic -->
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
   <script src="./app.js"></script>
 </body>
 </html>

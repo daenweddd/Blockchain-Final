@@ -180,7 +180,11 @@ button:disabled{
   border: 1px solid var(--line);
   border-radius: 12px;
   color: #d8e4ff;
+<<<<<<< HEAD
   max-height: 220px;   /* <-- важно: лог не раздувает страницу */
+=======
+  max-height: 220px;   
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
   overflow:auto;
   white-space:pre-wrap;
 }
@@ -190,4 +194,8 @@ button:disabled{
   gap:10px;
   flex-wrap:wrap;
   align-items:center;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c41e9b02403120c588aac21043187c313de4892
