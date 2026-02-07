@@ -1,35 +1,47 @@
 const hre = require("hardhat");
 
 async function main() {
+
+  // Get the first account from Hardhat
   const [deployer] = await hre.ethers.getSigners();
 
-  console.log("Deploying contracts with account:", deployer.address);
+  const net = await hre.ethers.provider.getNetwork();
 
-  // --- 1. Deploy RewardToken ---
+  console.log("Deploying with:", deployer.address);
+  console.log("Network chainId:", net.chainId.toString());
+
   const RewardToken = await hre.ethers.getContractFactory("RewardToken");
-  const rewardToken = await RewardToken.deploy("SupportBadge", "SBT");
+
+  const rewardToken = await RewardToken.deploy("SupportBadge", "RWD");
+
+  // Wait until deployment is finished
   await rewardToken.waitForDeployment();
 
-  const rewardTokenAddress = await rewardToken.getAddress();
-  console.log("RewardToken deployed to:", rewardTokenAddress);
+  // Get deployed token address
+  const tokenAddress = await rewardToken.getAddress();
+  console.log("RewardToken:", tokenAddress);
 
-  // --- 2. Deploy CharityCrowdfunding ---
   const Crowdfunding = await hre.ethers.getContractFactory("CharityCrowdfunding");
-  const crowdfunding = await Crowdfunding.deploy(rewardTokenAddress);
+
+  // Deploy crowdfunding contract
+  const crowdfunding = await Crowdfunding.deploy(tokenAddress);
+
   await crowdfunding.waitForDeployment();
 
+  // Get deployed crowdfunding address
   const crowdfundingAddress = await crowdfunding.getAddress();
-  console.log("Crowdfunding deployed to:", crowdfundingAddress);
+  console.log("CharityCrowdfunding:", crowdfundingAddress);
 
-  // --- 3. Set minter ---
+  // Allow crowdfunding contract to mint reward tokens
   const tx = await rewardToken.setMinter(crowdfundingAddress);
   await tx.wait();
 
-  console.log("Minter set to Crowdfunding contract");
-  console.log("DEPLOY FINISHED ");
+
+  console.log("CROWDFUNDING_ADDRESS =", crowdfundingAddress);
+  console.log("TOKEN_ADDRESS        =", tokenAddress);
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch((e) => {
+  console.error(e);
   process.exitCode = 1;
 });
