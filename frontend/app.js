@@ -11,12 +11,12 @@ const SEPOLIA = {
     token: "0x45f4B2520d8B5b9fa4D6ff6aBeDa8df72C6409af",
   },
 };
-// Addresses (localhost) — ok
-const CROWDFUNDING_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // CharityCrowdfunding
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";        // RewardToken
+
+const CROWDFUNDING_ADDRESS = "0x5D87198c3Fc9C43D33872BcEe41ea0Ab398DE4B4"; // CharityCrowdfunding
+const TOKEN_ADDRESS = "0xb3b1306D8bF46e32F5398888A1D0Aeb1542F40A9";        // RewardToken
 
 
-// Minimal ABI with only needed functions
+// Minimal ABI
 const CROWDFUNDING_ABI = [
   "function campaignCount() view returns (uint256)",
   "function getCampaign(uint256 id) view returns (string,uint256,uint256,address,address,uint256,bool,bool)",
@@ -34,7 +34,7 @@ const TOKEN_ABI = [
   "function symbol() view returns (string)",
 ];
 
-// App state (wallet + contracts)
+// App state 
 let provider, signer, account;
 let crowdfunding, token;
 
