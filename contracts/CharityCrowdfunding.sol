@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./RewardToken.sol";
 
 /// @title CharityCrowdfunding - testnet crowdfunding with ERC-20 rewards
-/// @notice Educational project. Uses only test ETH on Sepolia (or local).
+/// @notice Educational project. Uses only test ETH on Sepolia (or local)
 contract CharityCrowdfunding is ReentrancyGuard {
 
     // Campaign data stored on-chain

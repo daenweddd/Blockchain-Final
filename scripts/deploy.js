@@ -33,7 +33,7 @@ async function main() {
   console.log("Minter set");
 
   // Output addresses for frontend
-  console.log("\n== COPY TO FRONTEND CONFIG ==");
+  console.log(" COPY TO FRONTEND CONFIG");
   console.log("CROWDFUNDING_ADDRESS =", crowdfundingAddress);
   console.log("TOKEN_ADDRESS        =", tokenAddress);
 }

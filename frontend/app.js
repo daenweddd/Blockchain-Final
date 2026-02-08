@@ -16,7 +16,7 @@ const CROWDFUNDING_ADDRESS = "0x7e7649DC8F7a62cD86e1B491A7BC65C1B7ac1b35"; // Ch
 const TOKEN_ADDRESS = "0x7CB3180038dD80F65082DF540dCf8aacbfE514A7";        // RewardToken
 
 
-// Minimal ABI with only needed functions
+// Minimal ABI
 const CROWDFUNDING_ABI = [
   "function campaignCount() view returns (uint256)",
   "function getCampaign(uint256 id) view returns (string,uint256,uint256,address,address,uint256,bool,bool)",
@@ -34,7 +34,7 @@ const TOKEN_ABI = [
   "function symbol() view returns (string)",
 ];
 
-// App state (wallet + contracts)
+// App state 
 let provider, signer, account;
 let crowdfunding, token;
 
